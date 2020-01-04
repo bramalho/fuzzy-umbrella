@@ -20,16 +20,20 @@ func init() {
 		log.Fatal(err)
 	}
 
-	dbName := os.Getenv("db_name")
+	setUpDB()
+}
 
+func setUpDB() {
 	ctx, _ := context.WithTimeout(context.Background(), 10*time.Second)
-	clientOptions := options.Client().ApplyURI("mongodb://localhost:27017")
-	client, err = mongo.Connect(ctx, clientOptions)
+	clientOptions := options.Client().ApplyURI("mongodb://" + os.Getenv("db_host") + ":" + os.Getenv("db_port"))
+	client, err := mongo.Connect(ctx, clientOptions)
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	db = client.Database(dbName)
+	db = client.Database(os.Getenv("db_name"))
+
+	log.Println("Database connected to " + os.Getenv("db_host") + ":" + os.Getenv("db_port"))
 }
 
 // GetDB instance
