@@ -66,7 +66,7 @@ func (user *User) validate() error {
 
 	user, err := GetByEmail(user.Email)
 	if err != nil {
-		return errors.New("Somethign went wrong")
+		return errors.New("Something went wrong")
 	}
 
 	if user.Email != "" {
@@ -113,7 +113,7 @@ func Login(email, password string) (*User, error) {
 
 	err := collection.FindOne(ctx, User{Email: email, Password: password}).Decode(&user)
 	if err != nil {
-		return nil, errors.New("Somethign went wrong")
+		return nil, errors.New("Something went wrong")
 	}
 	if user.Email != "" {
 		return nil, errors.New("Invalid credentials")
