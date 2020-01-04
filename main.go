@@ -13,11 +13,13 @@ import (
 func main() {
 	router := mux.NewRouter()
 
-	router.HandleFunc("/api", handlers.Info).Methods("GET")
+	router.HandleFunc("/", handlers.Info).Methods("GET")
 
-	router.HandleFunc("/api/register", handlers.Register).Methods("POST")
-	router.HandleFunc("/api/login", handlers.Authenticate).Methods("POST")
-	router.HandleFunc("/api/account", handlers.GetUser).Methods("GET")
+	router.HandleFunc("/register", handlers.Register).Methods("POST")
+	router.HandleFunc("/login", handlers.Authenticate).Methods("POST")
+	router.HandleFunc("/account", handlers.GetUser).Methods("GET")
+
+	router.HandleFunc("/graphql", handlers.GraphQL).Methods("POST")
 
 	router.Use(app.JwtAuthentication)
 
