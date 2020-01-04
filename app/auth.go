@@ -14,7 +14,8 @@ import (
 // JwtAuthentication handels JWT tokens
 var JwtAuthentication = func(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		notAuth := []string{"/api", "/api/register", "/api/login"}
+		w.Header().Add("Content-Type", "application/json")
+		notAuth := []string{"/", "/register", "/login"}
 		requestPath := r.URL.Path
 
 		for _, value := range notAuth {
@@ -30,7 +31,6 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		if tokenHeader == "" {
 			response = u.Message(false, "Missing Authorization token")
 			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
 			u.Respond(w, response)
 			return
 		}
@@ -39,7 +39,6 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		if len(splitted) != 2 {
 			response = u.Message(false, "Invalid/Malformed Authorization token")
 			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
 			u.Respond(w, response)
 			return
 		}
@@ -54,7 +53,6 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		if err != nil {
 			response = u.Message(false, "Malformed Authorization token")
 			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
 			u.Respond(w, response)
 			return
 		}
@@ -62,7 +60,6 @@ var JwtAuthentication = func(next http.Handler) http.Handler {
 		if !token.Valid {
 			response = u.Message(false, "Token not valid.")
 			w.WriteHeader(http.StatusForbidden)
-			w.Header().Add("Content-Type", "application/json")
 			u.Respond(w, response)
 			return
 		}

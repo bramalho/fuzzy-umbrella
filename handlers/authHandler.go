@@ -5,6 +5,8 @@ import (
 	"fuzzy-umbrella/models"
 	u "fuzzy-umbrella/utils"
 	"net/http"
+
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // Register creates a new user
@@ -50,7 +52,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 // GetUser return user information
 var GetUser = func(w http.ResponseWriter, r *http.Request) {
 	resp := u.Message(true, "User Account")
-	resp["user"], _ = models.GetUserByID(r.Context().Value("user").(string))
+	resp["user"], _ = models.GetUserByID(r.Context().Value("user").(primitive.ObjectID).String())
 
 	u.Respond(w, resp)
 }
