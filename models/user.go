@@ -27,12 +27,13 @@ type User struct {
 }
 
 // GetUserByID information
-func GetUserByID(id primitive.ObjectID) (*User, error) {
+func GetUserByID(id string) (*User, error) {
 	var user User
 	collection := GetDB().Collection("users")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 
-	err := collection.FindOne(ctx, User{ID: id}).Decode(&user)
+	oid, _ := primitive.ObjectIDFromHex(id)
+	err := collection.FindOne(ctx, User{ID: oid}).Decode(&user)
 	if err != nil {
 		return nil, err
 	}
