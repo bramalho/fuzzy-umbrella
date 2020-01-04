@@ -2,7 +2,7 @@ package models
 
 import (
 	"context"
-	u "fuzzy-umbrella/utils"
+	"errors"
 	"os"
 	"strings"
 	"time"
@@ -26,8 +26,8 @@ type User struct {
 	Token    string             `json:"token,omitempty" bson:"token,omitempty"`
 }
 
-// GetByID information
-func GetByID(id string) (*User, error) {
+// GetUserByID information
+func GetUserByID(id string) (*User, error) {
 	var user User
 	collection := GetDB().Collection("users")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
@@ -55,32 +55,32 @@ func GetByEmail(email string) (*User, error) {
 	return &user, nil
 }
 
-// Validate user credentials
-func (user *User) Validate() (map[string]interface{}, bool) {
+func (user *User) validate() error {
 	if !strings.Contains(user.Email, "@") {
-		return u.Message(false, "Email address is required"), false
+		return errors.New("Email is required")
 	}
 
 	if len(user.Password) < 6 {
-		return u.Message(false, "Password is required"), false
+		return errors.New("Password is required")
 	}
 
 	user, err := GetByEmail(user.Email)
 	if err != nil {
-		return u.Message(false, "Somethign went wrong"), false
+		return errors.New("Somethign went wrong")
 	}
 
 	if user.Email != "" {
-		return u.Message(false, "Invalid Email"), false
+		return errors.New("Invalid Email")
 	}
 
-	return u.Message(false, "success"), true
+	return nil
 }
 
-// Create a new user
-func (user *User) Create() map[string]interface{} {
-	if resp, ok := user.Validate(); !ok {
-		return resp
+// CreateUser validates and create a new user
+func CreateUser(user *User) (*User, error) {
+	err := user.validate()
+	if err != nil {
+		return nil, err
 	}
 
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
@@ -91,7 +91,7 @@ func (user *User) Create() map[string]interface{} {
 
 	result, err := collection.InsertOne(ctx, user)
 	if err != nil {
-		return u.Message(false, "Somethign went wrong")
+		return nil, err
 	}
 
 	user.ID = result.InsertedID.(primitive.ObjectID)
@@ -102,28 +102,26 @@ func (user *User) Create() map[string]interface{} {
 	user.Token = tokenString
 	user.Password = ""
 
-	response := u.Message(true, "User successfuly created")
-	response["user"] = user
-	return response
+	return user, nil
 }
 
 // Login user
-func Login(email, password string) map[string]interface{} {
+func Login(email, password string) (*User, error) {
 	user := &User{}
 	collection := client.Database("app_db").Collection("blogs")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 
 	err := collection.FindOne(ctx, User{Email: email, Password: password}).Decode(&user)
 	if err != nil {
-		return u.Message(false, "Connection error. Please retry")
+		return nil, errors.New("Somethign went wrong")
 	}
 	if user.Email != "" {
-		return u.Message(false, "Invalid credentials")
+		return nil, errors.New("Invalid credentials")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
 	if err != nil && err == bcrypt.ErrMismatchedHashAndPassword {
-		return u.Message(false, "Invalid credentials")
+		return nil, errors.New("Invalid credentials")
 	}
 
 	tk := &Token{UserID: user.ID}
@@ -132,7 +130,5 @@ func Login(email, password string) map[string]interface{} {
 	user.Token = tokenString
 	user.Password = ""
 
-	resp := u.Message(true, "Logged In")
-	resp["user"] = user
-	return resp
+	return user, nil
 }
