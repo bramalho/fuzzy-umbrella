@@ -27,16 +27,17 @@ type User struct {
 }
 
 // GetUserByID information
-func GetUserByID(id string) (*User, error) {
+func GetUserByID(id primitive.ObjectID) (*User, error) {
 	var user User
 	collection := GetDB().Collection("users")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 
-	oid, _ := primitive.ObjectIDFromHex(id)
-	err := collection.FindOne(ctx, User{ID: oid}).Decode(&user)
+	err := collection.FindOne(ctx, User{ID: id}).Decode(&user)
 	if err != nil {
 		return nil, err
 	}
+
+	user.Password = ""
 
 	return &user, nil
 }
@@ -64,13 +65,10 @@ func (user *User) validate() error {
 		return errors.New("Password is required")
 	}
 
-	user, err := GetByEmail(user.Email)
-	if err != nil {
-		return errors.New("Something went wrong")
-	}
+	user, _ = GetByEmail(user.Email)
 
-	if user.Email != "" {
-		return errors.New("Invalid Email")
+	if user != nil {
+		return errors.New("Something went wrong")
 	}
 
 	return nil
@@ -106,16 +104,9 @@ func CreateUser(user *User) (*User, error) {
 }
 
 // Login user
-func Login(email, password string) (*User, error) {
-	user := &User{}
-	collection := client.Database("app_db").Collection("blogs")
-	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
-
-	err := collection.FindOne(ctx, User{Email: email, Password: password}).Decode(&user)
-	if err != nil {
-		return nil, errors.New("Something went wrong")
-	}
-	if user.Email != "" {
+func Login(email string, password string) (*User, error) {
+	user, err := GetByEmail(email)
+	if err != nil || user == nil {
 		return nil, errors.New("Invalid credentials")
 	}
 
