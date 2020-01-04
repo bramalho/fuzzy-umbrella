@@ -35,8 +35,8 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 
 // GetUser return user information
 var GetUser = func(w http.ResponseWriter, r *http.Request) {
-	resp := u.Message(true, "Logged In")
-	resp["user"] = models.GetUser(r.Context().Value("user").(uint))
+	resp := u.Message(true, "User Account")
+	resp["user"], _ = models.GetByID(r.Context().Value("user").(string))
 
 	u.Respond(w, resp)
 }

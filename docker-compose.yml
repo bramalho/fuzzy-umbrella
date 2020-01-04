@@ -1,17 +1,14 @@
 version: "3"
 
-services:
-  postgres:
-    image: postgres:latest
-    container_name: "postgres"
-    environment:
-      - POSTGRES_USER=user
-      - POSTGRES_PASSWORD=password
-      - POSTGRES_DB=fuzzy_umbrella
-    ports:
-      - "5434:5432"
-    volumes:
-      - db-data:/var/lib/postgresql/data
-
-volumes:
-  db-data:
+services: 
+    mongodb:
+        image: mongo:3.6.14
+        container_name: "mongodb"
+        environment:
+          - MONGO_DATA_DIR=/data/db
+          - MONGO_LOG_DIR=/dev/null
+        volumes:
+          - ./data/db:/data/db
+        ports:
+            - 27017:27017
+        command: mongod --logpath=/dev/null # --quiet

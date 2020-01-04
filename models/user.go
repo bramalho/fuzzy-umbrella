@@ -1,27 +1,58 @@
 package models
 
 import (
+	"context"
 	u "fuzzy-umbrella/utils"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
-	"github.com/jinzhu/gorm"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"golang.org/x/crypto/bcrypt"
 )
 
 // Token struct for token
 type Token struct {
-	UserID uint
+	UserID primitive.ObjectID
 	jwt.StandardClaims
 }
 
 // User struct
 type User struct {
-	gorm.Model
-	Email    string `json:"email"`
-	Password string `json:"password"`
-	Token    string `json:"token";sql:"-"`
+	ID       primitive.ObjectID `json:"_id,omitempty" bson:"_id,omitempty"`
+	Email    string             `json:"email,omitempty" bson:"email,omitempty"`
+	Password string             `json:"password,omitempty" bson:"password,omitempty"`
+	Token    string             `json:"token,omitempty" bson:"token,omitempty"`
+}
+
+// GetByID information
+func GetByID(id string) (*User, error) {
+	var user User
+	collection := GetDB().Collection("users")
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+
+	oid, _ := primitive.ObjectIDFromHex(id)
+	err := collection.FindOne(ctx, User{ID: oid}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// GetByEmail find one user by email
+func GetByEmail(email string) (*User, error) {
+	var user User
+	collection := GetDB().Collection("users")
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+
+	err := collection.FindOne(ctx, User{Email: email}).Decode(&user)
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
 }
 
 // Validate user credentials
@@ -34,15 +65,13 @@ func (user *User) Validate() (map[string]interface{}, bool) {
 		return u.Message(false, "Password is required"), false
 	}
 
-	temp := &User{}
-
-	err := GetDB().Table("users").Where("email = ?", user.Email).First(temp).Error
-	if err != nil && err != gorm.ErrRecordNotFound {
-		return u.Message(false, "Connection error. Please retry"), false
+	user, err := GetByEmail(user.Email)
+	if err != nil {
+		return u.Message(false, "Somethign went wrong"), false
 	}
 
-	if temp.Email != "" {
-		return u.Message(false, "Email address already userd"), false
+	if user.Email != "" {
+		return u.Message(false, "Invalid Email"), false
 	}
 
 	return u.Message(false, "success"), true
@@ -57,11 +86,15 @@ func (user *User) Create() map[string]interface{} {
 	hashedPassword, _ := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	user.Password = string(hashedPassword)
 
-	GetDB().Create(user)
+	collection := GetDB().Collection("users")
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 
-	if user.ID <= 0 {
-		return u.Message(false, "Connection error. Please retry")
+	result, err := collection.InsertOne(ctx, user)
+	if err != nil {
+		return u.Message(false, "Somethign went wrong")
 	}
+
+	user.ID = result.InsertedID.(primitive.ObjectID)
 
 	tk := &Token{UserID: user.ID}
 	token := jwt.NewWithClaims(jwt.GetSigningMethod("HS256"), tk)
@@ -77,12 +110,15 @@ func (user *User) Create() map[string]interface{} {
 // Login user
 func Login(email, password string) map[string]interface{} {
 	user := &User{}
-	err := GetDB().Table("users").Where("email = ?", email).First(user).Error
+	collection := client.Database("app_db").Collection("blogs")
+	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
+
+	err := collection.FindOne(ctx, User{Email: email, Password: password}).Decode(&user)
 	if err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return u.Message(false, "Invalid credentials")
-		}
 		return u.Message(false, "Connection error. Please retry")
+	}
+	if user.Email != "" {
+		return u.Message(false, "Invalid credentials")
 	}
 
 	err = bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password))
@@ -99,16 +135,4 @@ func Login(email, password string) map[string]interface{} {
 	resp := u.Message(true, "Logged In")
 	resp["user"] = user
 	return resp
-}
-
-// GetUser information
-func GetUser(u uint) *User {
-	user := &User{}
-	GetDB().Table("users").Where("id = ?", u).First(user)
-	if user.Email == "" {
-		return nil
-	}
-
-	user.Password = ""
-	return user
 }

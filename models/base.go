@@ -1,16 +1,15 @@
 package models
 
 import (
-	"fmt"
 	"log"
 	"os"
 
-	"github.com/jinzhu/gorm"
-	_ "github.com/jinzhu/gorm/dialects/postgres"
 	"github.com/joho/godotenv"
+	"go.mongodb.org/mongo-driver/mongo"
 )
 
-var db *gorm.DB
+var client *mongo.Client
+var db *mongo.Database
 
 func init() {
 	err := godotenv.Load()
@@ -18,28 +17,12 @@ func init() {
 		log.Fatal(err)
 	}
 
-	dbHost := os.Getenv("db_host")
-	dbPort := os.Getenv("db_port")
 	dbName := os.Getenv("db_name")
-	dbUser := os.Getenv("db_user")
-	dbPassword := os.Getenv("db_pass")
 
-	dbURI := fmt.Sprintf("host=%s port=%s dbname=%s user=%s password=%s sslmode=disable", dbHost, dbPort, dbName, dbUser, dbPassword)
-	log.Println("Connecting to " + dbURI)
-
-	conn, err := gorm.Open("postgres", dbURI)
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	db = conn
-	db.Debug().AutoMigrate(
-		&User{},
-		&Product{},
-	)
+	db = client.Database(dbName)
 }
 
 // GetDB instance
-func GetDB() *gorm.DB {
+func GetDB() *mongo.Database {
 	return db
 }
