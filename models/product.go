@@ -37,7 +37,7 @@ func CreateProduct(product *Product) (*Product, error) {
 // GetProductByID for user
 func GetProductByID(id string, u User) (*Product, error) {
 	product := Product{}
-	collection := client.Database("app_db").Collection("products")
+	collection := GetDB().Collection("products")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 
 	oid, _ := primitive.ObjectIDFromHex(id)
@@ -52,7 +52,7 @@ func GetProductByID(id string, u User) (*Product, error) {
 // GetProducts for user
 func GetProducts(u User) ([]Product, error) {
 	var products []Product
-	collection := client.Database("app_db").Collection("products")
+	collection := GetDB().Collection("products")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 
 	cursor, err := collection.Find(ctx, Product{User: &u})
