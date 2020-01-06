@@ -1,6 +1,6 @@
 {
 	"info": {
-		"_postman_id": "12474ece-c7ae-4eff-839a-34931abfba09",
+		"_postman_id": "e12e6451-c29f-4dac-a45c-58bf1b8a40a2",
 		"name": "Fuzzy Umbrella",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
 	},
@@ -49,12 +49,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"email\": \"bruno@api.com\",\n\t\"password\": \"pass123\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					"raw": "{\n\t\"email\": \"bruno@api.com\",\n\t\"password\": \"pass123\"\n}"
 				},
 				"url": {
 					"raw": "{{HOST}}/register",
@@ -98,12 +93,7 @@
 				],
 				"body": {
 					"mode": "raw",
-					"raw": "{\n\t\"email\": \"bruno@api.com\",\n\t\"password\": \"pass123\"\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
+					"raw": "{\n\t\"email\": \"bruno@api.com\",\n\t\"password\": \"pass123\"\n}"
 				},
 				"url": {
 					"raw": "{{HOST}}/login",
@@ -142,6 +132,22 @@
 		},
 		{
 			"name": "Product Create",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"id": "7a24b95b-ea33-4bf0-aa0a-105145154b37",
+						"exec": [
+							"pm.test(\"Set token\", function () {",
+							"    var jsonData = pm.response.json();",
+							"    pm.environment.set(\"PRODUCT_ID\", jsonData.data.createProduct.id);",
+							"});",
+							""
+						],
+						"type": "text/javascript"
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [
@@ -154,7 +160,67 @@
 				"body": {
 					"mode": "graphql",
 					"graphql": {
-						"query": "mutation {\n    createProduct(\n        name: \"My Product\"\n        description: \"This is My Product\",\n        quantity: 1,\n        status: true\n    ) {\n        name,\n        description,\n        quantity,\n        status\n    }\n}\n",
+						"query": "mutation {\n    createProduct(\n        name: \"My Product\"\n        description: \"This is My Product\",\n        quantity: 1,\n        status: true\n    ) {\n        id,\n        name,\n        description,\n        quantity,\n        status\n    }\n}\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{HOST}}/graphql",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Product Get",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{TOKEN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query {\n    product(\n        id: \"{{PRODUCT_ID}}\"\n    ) {\n        id,\n        name,\n        description,\n        quantity,\n        status\n    }\n}\n",
+						"variables": ""
+					}
+				},
+				"url": {
+					"raw": "{{HOST}}/graphql",
+					"host": [
+						"{{HOST}}"
+					],
+					"path": [
+						"graphql"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Product Get All",
+			"request": {
+				"method": "POST",
+				"header": [
+					{
+						"key": "Authorization",
+						"type": "text",
+						"value": "Bearer {{TOKEN}}"
+					}
+				],
+				"body": {
+					"mode": "graphql",
+					"graphql": {
+						"query": "query {\n    products {\n        id,\n        name,\n        description,\n        quantity,\n        status\n    }\n}\n",
 						"variables": ""
 					}
 				},
@@ -170,6 +236,5 @@
 			},
 			"response": []
 		}
-	],
-	"protocolProfileBehavior": {}
+	]
 }
