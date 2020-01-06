@@ -1,6 +1,10 @@
 package types
 
-import "github.com/graphql-go/graphql"
+import (
+	"fuzzy-umbrella/utils"
+
+	"github.com/graphql-go/graphql"
+)
 
 // Product type
 var Product = graphql.NewObject(
@@ -8,7 +12,7 @@ var Product = graphql.NewObject(
 		Name: "Product",
 		Fields: graphql.Fields{
 			"id": &graphql.Field{
-				Type: graphql.Int,
+				Type: utils.ObjectID,
 			},
 			"user": &graphql.Field{
 				Type: graphql.String,
