@@ -26,6 +26,11 @@ type User struct {
 	Token    string             `json:"token,omitempty" bson:"token,omitempty"`
 }
 
+// GetUserID return the user id as string
+func GetUserID(id interface{}) string {
+	return id.(primitive.ObjectID).String()
+}
+
 // GetUserByID information
 func GetUserByID(id string) (*User, error) {
 	var user User

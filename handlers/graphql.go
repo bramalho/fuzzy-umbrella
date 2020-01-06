@@ -40,6 +40,7 @@ var GraphQL = func(w http.ResponseWriter, r *http.Request) {
 	result := graphql.Do(graphql.Params{
 		Schema:        schema,
 		RequestString: req.Query,
+		Context:       r.Context(),
 	})
 
 	json.NewEncoder(w).Encode(result)

@@ -1,7 +1,6 @@
 package mutations
 
 import (
-	"fmt"
 	"fuzzy-umbrella/resolvers"
 	"fuzzy-umbrella/types"
 
@@ -12,9 +11,6 @@ import (
 var CreateProductMutation = graphql.Field{
 	Type: types.Product,
 	Args: graphql.FieldConfigArgument{
-		"user_id": &graphql.ArgumentConfig{
-			Type: graphql.String,
-		},
 		"name": &graphql.ArgumentConfig{
 			Type: graphql.NewNonNull(graphql.String),
 		},
@@ -29,7 +25,6 @@ var CreateProductMutation = graphql.Field{
 		},
 	},
 	Resolve: func(params graphql.ResolveParams) (interface{}, error) {
-		fmt.Println(params)
 		product, err := resolvers.CreateProduct(params)
 		return product, err
 	},

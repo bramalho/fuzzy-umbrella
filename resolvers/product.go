@@ -13,9 +13,9 @@ func GetProduct(p graphql.ResolveParams) (*models.Product, error) {
 	if ok == false {
 		return nil, nil
 	}
-	uid, ok := p.Args["user_id"].(string)
-	if ok == false {
-		return nil, nil
+	uid := models.GetUserID(p.Context.Value("user"))
+	if uid == "" {
+		return nil, errors.New("Invald User ID")
 	}
 
 	user, err := models.GetUserByID(uid)
@@ -33,9 +33,9 @@ func GetProduct(p graphql.ResolveParams) (*models.Product, error) {
 
 // GetProducts resolver
 func GetProducts(p graphql.ResolveParams) ([]models.Product, error) {
-	uid, ok := p.Args["user_id"].(string)
-	if ok == false {
-		return nil, nil
+	uid := models.GetUserID(p.Context.Value("user"))
+	if uid == "" {
+		return nil, errors.New("Invald User ID")
 	}
 
 	user, err := models.GetUserByID(uid)
@@ -53,8 +53,8 @@ func GetProducts(p graphql.ResolveParams) ([]models.Product, error) {
 
 // CreateProduct resolver
 func CreateProduct(p graphql.ResolveParams) (*models.Product, error) {
-	uid, ok := p.Args["user_id"].(string)
-	if ok == false {
+	uid := models.GetUserID(p.Context.Value("user"))
+	if uid == "" {
 		return nil, errors.New("Invald User ID")
 	}
 
