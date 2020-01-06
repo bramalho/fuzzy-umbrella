@@ -52,7 +52,7 @@ var Authenticate = func(w http.ResponseWriter, r *http.Request) {
 // GetUser return user information
 var GetUser = func(w http.ResponseWriter, r *http.Request) {
 	resp := u.Message(true, "User Account")
-	resp["user"], _ = models.GetUserByID(r.Context().Value("user").(primitive.ObjectID).String())
+	resp["user"], _ = models.GetUserByID(r.Context().Value("user").(primitive.ObjectID))
 
 	u.Respond(w, resp)
 }

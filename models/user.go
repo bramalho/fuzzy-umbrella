@@ -32,13 +32,12 @@ func GetUserID(id interface{}) string {
 }
 
 // GetUserByID information
-func GetUserByID(id string) (*User, error) {
+func GetUserByID(id primitive.ObjectID) (*User, error) {
 	var user User
 	collection := GetDB().Collection("users")
 	ctx, _ := context.WithTimeout(context.Background(), 30*time.Second)
 
-	oid, _ := primitive.ObjectIDFromHex(id)
-	err := collection.FindOne(ctx, User{ID: oid}).Decode(&user)
+	err := collection.FindOne(ctx, User{ID: id}).Decode(&user)
 	if err != nil {
 		return nil, err
 	}

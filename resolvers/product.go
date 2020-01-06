@@ -5,6 +5,7 @@ import (
 	"fuzzy-umbrella/models"
 
 	"github.com/graphql-go/graphql"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 // GetProduct resolver
@@ -13,14 +14,9 @@ func GetProduct(p graphql.ResolveParams) (*models.Product, error) {
 	if ok == false {
 		return nil, nil
 	}
-	uid := models.GetUserID(p.Context.Value("user"))
-	if uid == "" {
-		return nil, errors.New("Invald User ID")
-	}
-
-	user, err := models.GetUserByID(uid)
+	user, err := models.GetUserByID(p.Context.Value("user").(primitive.ObjectID))
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Invald User ID")
 	}
 
 	product, err := models.GetProductByID(id, *user)
@@ -33,14 +29,9 @@ func GetProduct(p graphql.ResolveParams) (*models.Product, error) {
 
 // GetProducts resolver
 func GetProducts(p graphql.ResolveParams) ([]models.Product, error) {
-	uid := models.GetUserID(p.Context.Value("user"))
-	if uid == "" {
-		return nil, errors.New("Invald User ID")
-	}
-
-	user, err := models.GetUserByID(uid)
+	user, err := models.GetUserByID(p.Context.Value("user").(primitive.ObjectID))
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Invald User ID")
 	}
 
 	products, err := models.GetProducts(*user)
@@ -53,14 +44,9 @@ func GetProducts(p graphql.ResolveParams) ([]models.Product, error) {
 
 // CreateProduct resolver
 func CreateProduct(p graphql.ResolveParams) (*models.Product, error) {
-	uid := models.GetUserID(p.Context.Value("user"))
-	if uid == "" {
-		return nil, errors.New("Invald User ID")
-	}
-
-	user, err := models.GetUserByID(uid)
+	user, err := models.GetUserByID(p.Context.Value("user").(primitive.ObjectID))
 	if err != nil {
-		return nil, err
+		return nil, errors.New("Invald User ID")
 	}
 
 	product, err := models.CreateProduct(&models.Product{
