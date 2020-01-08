@@ -26,16 +26,16 @@ func init() {
 
 	queue := redismq.CreateQueue(redisHost, redisPort, redisPass, redisDB, redisQueue)
 
-	consumer, err := queue.AddConsumer("my_consumer")
+	consumer, err = queue.AddConsumer("my_consumer")
 	if err != nil {
 		panic(err)
 	}
 }
 
-func GetQueue() {
+func GetQueue() *redismq.Queue {
 	return queue
 }
 
-func GetConsumer() {
+func GetConsumer() *redismq.Consumer {
 	return consumer
 }
