@@ -1,0 +1,26 @@
+on: [push]
+name: Lint
+jobs:
+  lint:
+    name: Lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v1
+        with:
+          go-version: 1.x
+      
+      - name: Setup env
+        run: |
+          echo "::set-env name=GOPATH::$(go env GOPATH)"
+          echo "::add-path::$(go env GOPATH)/bin"
+        shell: bash
+
+      - name: Checkout code
+        uses: actions/checkout@v1
+
+      - name: Install golint
+        run: go get -u golang.org/x/lint/golint
+      
+      - name: Lint
+        run: golint -set_exit_status
